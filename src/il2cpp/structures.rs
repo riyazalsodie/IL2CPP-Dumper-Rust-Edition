@@ -772,8 +772,8 @@ impl Il2CppImageDefinition {
         let exported_type_count = if version >= 24.0 { stream.read_u32()? } else { 0 };
         let entry_point_index = read_method_idx(stream)?;
         let token = read_versioned!(stream, version, 19.0, 999.0, read_u32, 0);
-        let custom_attribute_start = read_versioned!(stream, version, 24.1, 27.2, read_i32, 0);
-        let custom_attribute_count = read_versioned!(stream, version, 24.1, 27.2, read_i32, 0);
+        let custom_attribute_start = read_versioned!(stream, version, 24.1, 999.0, read_i32, 0);
+        let custom_attribute_count = read_versioned!(stream, version, 24.1, 999.0, read_i32, 0);
         Ok(Self {
             name_index, assembly_index, type_start, type_count,
             exported_type_start, exported_type_count: exported_type_count as i32,
@@ -1950,8 +1950,8 @@ impl Il2CppCodeRegistration {
             guids: if version >= 21.0 && version <= 22.0 { stream.read_ptr()? } else { 0 },
             unresolved_virtual_call_count: if version >= 22.0 { stream.read_ptr()? } else { 0 },
             unresolved_virtual_call_pointers: if version >= 22.0 { stream.read_ptr()? } else { 0 },
-            unresolved_instance_call_pointers: if version >= 29.1 { stream.read_ptr()? } else { 0 },
-            unresolved_static_call_pointers: if version >= 29.1 { stream.read_ptr()? } else { 0 },
+            unresolved_instance_call_pointers: if version >= 29.0 { stream.read_ptr()? } else { 0 },
+            unresolved_static_call_pointers: if version >= 29.0 { stream.read_ptr()? } else { 0 },
             interop_data_count: if version >= 23.0 { stream.read_ptr()? } else { 0 },
             interop_data: if version >= 23.0 { stream.read_ptr()? } else { 0 },
             windows_runtime_factory_count: if version >= 24.3 { stream.read_ptr()? } else { 0 },
@@ -1973,7 +1973,7 @@ impl Il2CppCodeRegistration {
         if version <= 24.5 { count += 2; }
         if version >= 21.0 && version <= 22.0 { count += 2; }
         if version >= 22.0 { count += 2; }
-        if version >= 29.1 { count += 2; }
+        if version >= 29.0 { count += 2; }
         if version >= 23.0 { count += 2; }
         if version >= 24.3 { count += 2; }
         if version >= 24.2 { count += 2; }

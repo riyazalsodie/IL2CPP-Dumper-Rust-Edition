@@ -44,8 +44,13 @@ impl CppScaffolding {
                 let image_name = metadata
                     .get_string_from_index(image_def.name_index)
                     .unwrap_or_default();
-                let type_end = image_def.type_start as usize + image_def.type_count as usize;
-                (image_def.type_start as usize..type_end)
+                let type_start = image_def.type_start as usize;
+                let type_count = image_def.type_count as usize;
+                if type_start >= metadata.type_defs.len() {
+                    return Vec::new();
+                }
+                let type_end = std::cmp::min(type_start + type_count, metadata.type_defs.len());
+                (type_start..type_end)
                     .map(|type_def_index| (type_def_index, image_name.clone()))
                     .collect::<Vec<_>>()
             })
@@ -55,7 +60,10 @@ impl CppScaffolding {
             .par_iter()
             .map(|(type_def_index, image_name)| {
                 let mut local_exec = Il2CppExecutor::new_for_worker(executor);
-                let type_def = metadata.type_defs[*type_def_index].clone();
+                let type_def = match metadata.type_defs.get(*type_def_index) {
+                    Some(td) => td.clone(),
+                    None => return Vec::new(),
+                };
                 let type_name = local_exec.get_type_def_name(
                     &type_def,
                     *type_def_index,
@@ -65,10 +73,18 @@ impl CppScaffolding {
                     true,
                 );
                 let mut entries = Vec::new();
-                let method_end = type_def.method_start as usize + type_def.method_count as usize;
+                let method_start = type_def.method_start as usize;
+                let method_count = type_def.method_count as usize;
+                if method_start >= metadata.method_defs.len() {
+                    return entries;
+                }
+                let method_end = std::cmp::min(method_start + method_count, metadata.method_defs.len());
 
-                for method_index in type_def.method_start as usize..method_end {
-                    let method_def = metadata.method_defs[method_index].clone();
+                for method_index in method_start..method_end {
+                    let method_def = match metadata.method_defs.get(method_index) {
+                        Some(md) => md.clone(),
+                        None => continue,
+                    };
                     let method_name_raw = metadata
                         .get_string_from_index(method_def.name_index as i32)
                         .unwrap_or_default();

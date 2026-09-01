@@ -194,10 +194,8 @@ impl<'a> SectionHelper<'a> {
                                                 let i = (ref_va2 - pv) / ptr_size as u64;
                                                 if i < self.image_count as u64 && pv == ref_va2 - i * ptr_size as u64 {
                                                     if let Some(ref_va3) = self.offset_to_va(next_offset) {
-                                                        if self.version >= 29.1 {
+                                                        if self.version >= 29.0 {
                                                             return Some(ref_va3 - ptr_size as u64 * 16);
-                                                        } else if self.version >= 29.0 {
-                                                            return Some(ref_va3 - ptr_size as u64 * 14);
                                                         }
                                                         return Some(ref_va3 - ptr_size as u64 * 13);
                                                     }

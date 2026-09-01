@@ -114,9 +114,17 @@ fn dump_rgctx_section(
             let mut image_buffer = String::new();
             let mut local_count = 0u64;
 
-            let type_end = image.type_start as usize + image.type_count as usize;
-            for type_idx in image.type_start as usize..type_end {
-                let type_def = metadata.type_defs[type_idx].clone();
+            let type_start = image.type_start as usize;
+            let type_count = image.type_count as usize;
+            if type_start >= metadata.type_defs.len() {
+                return (image_name, String::new(), 0);
+            }
+            let type_end = std::cmp::min(type_start + type_count, metadata.type_defs.len());
+            for type_idx in type_start..type_end {
+                let type_def = match metadata.type_defs.get(type_idx) {
+                    Some(td) => td.clone(),
+                    None => continue,
+                };
 
                 if let Some(rgctxs) =
                     local_exec.get_rgctx_definition_for_type(&image_name, &type_def, metadata, il2cpp)
@@ -288,9 +296,17 @@ fn dump_custom_attributes_section(
             let mut image_buffer = String::new();
             let mut local_count = 0u64;
 
-            let type_end = image.type_start as usize + image.type_count as usize;
-            for type_idx in image.type_start as usize..type_end {
-                let type_def = metadata.type_defs[type_idx].clone();
+            let type_start = image.type_start as usize;
+            let type_count = image.type_count as usize;
+            if type_start >= metadata.type_defs.len() {
+                return (image_name, String::new(), 0);
+            }
+            let type_end = std::cmp::min(type_start + type_count, metadata.type_defs.len());
+            for type_idx in type_start..type_end {
+                let type_def = match metadata.type_defs.get(type_idx) {
+                    Some(td) => td.clone(),
+                    None => continue,
+                };
                 let type_name = local_exec.get_type_def_name(
                     &type_def, type_idx, metadata, il2cpp, true, true,
                 );
@@ -519,9 +535,17 @@ fn dump_vtable_section(
             let mut local_types = 0u64;
             let mut local_slots = 0u64;
 
-            let type_end = image.type_start as usize + image.type_count as usize;
-            for type_idx in image.type_start as usize..type_end {
-                let type_def = metadata.type_defs[type_idx].clone();
+            let type_start = image.type_start as usize;
+            let type_count = image.type_count as usize;
+            if type_start >= metadata.type_defs.len() {
+                return (image_name, String::new(), 0, 0);
+            }
+            let type_end = std::cmp::min(type_start + type_count, metadata.type_defs.len());
+            for type_idx in type_start..type_end {
+                let type_def = match metadata.type_defs.get(type_idx) {
+                    Some(td) => td.clone(),
+                    None => continue,
+                };
                 if type_def.vtable_count == 0 {
                     continue;
                 }
@@ -684,9 +708,17 @@ fn dump_interface_section(
             let mut local_types = 0u64;
             let mut local_impls = 0u64;
 
-            let type_end = image.type_start as usize + image.type_count as usize;
-            for type_idx in image.type_start as usize..type_end {
-                let type_def = metadata.type_defs[type_idx].clone();
+            let type_start = image.type_start as usize;
+            let type_count = image.type_count as usize;
+            if type_start >= metadata.type_defs.len() {
+                return (image_name, String::new(), 0, 0);
+            }
+            let type_end = std::cmp::min(type_start + type_count, metadata.type_defs.len());
+            for type_idx in type_start..type_end {
+                let type_def = match metadata.type_defs.get(type_idx) {
+                    Some(td) => td.clone(),
+                    None => continue,
+                };
                 if type_def.interfaces_count == 0 && type_def.interface_offsets_count == 0 {
                     continue;
                 }
