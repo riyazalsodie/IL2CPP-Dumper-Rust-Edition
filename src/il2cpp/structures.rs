@@ -387,18 +387,25 @@ pub struct Il2CppGlobalMetadataHeader {
 
 impl Il2CppGlobalMetadataHeader {
     pub fn read(stream: &mut BinaryStream, version: f64) -> Result<Self> {
-        let v38 = version >= 38.0;
+        let sanity = stream.read_u32()?;
+        let version_field = stream.read_i32()?;
+
+        let first_off = stream.read_i32()?;
+        stream.set_position(stream.position() - 4);
+
+        let is_sequential_triplets = first_off == 380;
+        let v38 = version >= 38.0 || is_sequential_triplets;
+        let has_triplets = is_sequential_triplets || (version >= 38.0);
+
         macro_rules! sec {
             () => {{
                 let o = stream.read_i32()?;
                 let s = stream.read_i32()?;
-                let c = if v38 { stream.read_i32()? } else { 0 };
+                let c = if has_triplets { stream.read_i32()? } else { 0 };
                 (o, s, c)
             }};
         }
-        let sanity = stream.read_u32()?;
-        let version_field = stream.read_i32()?;
-        if v38 {
+        if v38 && !is_sequential_triplets {
             let (string_offset, string_size, _) = sec!(); // 0
             let (_, _, _) = sec!(); // 1
             let (events_offset, events_size, events_count) = sec!(); // 2

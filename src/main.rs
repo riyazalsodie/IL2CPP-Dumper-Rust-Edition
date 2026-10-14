@@ -461,7 +461,7 @@ fn init_elf(data: Vec<u8>, metadata: &Metadata, config: &Config, cli: &Cli) -> R
             u64::from_str_radix(cr_str.trim_start_matches("0x").trim_start_matches("0X"), 16),
             u64::from_str_radix(mr_str.trim_start_matches("0x").trim_start_matches("0X"), 16),
         ) {
-            match elf.init_with_auto_plus(cr, mr) {
+            match elf.init(cr, mr).or_else(|_| elf.init_with_auto_plus(cr, mr)) {
                 Ok(()) => {
                     found = true;
                     final_cr = Some(cr);
