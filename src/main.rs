@@ -1190,14 +1190,24 @@ fn run() -> Result<()> {
 }
 
 fn main() {
-    if let Err(e) = run() {
-        eprintln!();
-        eprintln!(
-            "  {} {}",
-            style("✗ ERROR:").red().bold(),
-            style(&e).red()
-        );
-        eprintln!();
-        process::exit(1);
+    let builder = std::thread::Builder::new()
+        .name("dumper_main".into())
+        .stack_size(128 * 1024 * 1024);
+
+    let handler = builder.spawn(|| {
+        if let Err(e) = run() {
+            eprintln!();
+            eprintln!(
+                "  {} {}",
+                style("✗ ERROR:").red().bold(),
+                style(&e).red()
+            );
+            eprintln!();
+            process::exit(1);
+        }
+    }).expect("failed to spawn dumper thread with 128MB stack");
+
+    if let Err(e) = handler.join() {
+        std::panic::resume_unwind(e);
     }
 }

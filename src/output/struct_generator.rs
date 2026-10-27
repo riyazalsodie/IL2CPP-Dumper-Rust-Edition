@@ -2003,13 +2003,17 @@ impl StructGenerator {
         list: &[StructInfo],
         name_map: &HashMap<String, usize>,
         buf: &mut String,
+        visited: &mut HashSet<usize>,
     ) {
+        if !visited.insert(idx) {
+            return;
+        }
         let info = &list[idx];
         if let Some(parent_name) = &info.parent {
             let parent_key = format!("{}_o", parent_name);
             if let Some(&parent_idx) = name_map.get(&parent_key) {
                 // Recursively write fields from the topmost base class down
-                Self::write_gcc_parent_fields(parent_idx, list, name_map, buf);
+                Self::write_gcc_parent_fields(parent_idx, list, name_map, buf, visited);
                 
                 let p_info = &list[parent_idx];
                 for field in &p_info.fields {
@@ -2082,7 +2086,8 @@ impl StructGenerator {
                 writeln!(buf, "struct {}_Fields {{", info.type_name).ok();
             }
             // Flatten fields from parents first
-            Self::write_gcc_parent_fields(idx, list, name_map, buf);
+            let mut visited = HashSet::new();
+            Self::write_gcc_parent_fields(idx, list, name_map, buf, &mut visited);
         } else {
             if let Some(parent_name) = &info.parent {
                 writeln!(buf, "struct {}_Fields : {}_Fields {{", info.type_name, parent_name).ok();
